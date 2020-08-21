@@ -30,23 +30,28 @@ public class UserInterface {
 		Scanner input = new Scanner(System.in);
 		
 		String inputNumber = input.nextLine();
-	
 		
-		if((!inputNumber.equals("1"))&&(!inputNumber.equals("2"))) {
+		switch(inputNumber) {
+		
+		case "1":
+			//login
+			Login loginObj= new Login();
+			loginObj.login();
+			
+			UserProccess processObj = new UserProccess();
+			processObj.userProcesses(loginObj);
+			break;
+			
+		case "2":
+			//register
+			Registration Registration = new Registration();
+			Registration.fetchAuthInfo();
+			break;
+		
+		default:
 			System.out.println("Invalid Input. \nRun code again to try again");
 		}
-		else {
-			if(inputNumber.equals("1")) {
-				//login
-				Login loginObj= new Login();
-				loginObj.login();
-			}
-			else {
-				//register
-				Registration Registration = new Registration();
-				Registration.fetchAuthInfo();
-			}
-		}
+		
 		
 	}
 

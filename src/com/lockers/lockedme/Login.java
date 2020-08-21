@@ -15,6 +15,17 @@ public class Login {
 	
 	private String loginAttempt = new String("Failed");
 	
+	
+	
+	public String getUsername() {
+		return username;
+	}
+
+	public String getLoginAttempt() {
+		return loginAttempt;
+	}
+
+
 	private HashMap<String, String> allCredentials = new HashMap<String,String>();
 	
 	private void setAllUserCredentionals() {
@@ -59,13 +70,15 @@ public class Login {
 			return;
 		}
 		
+		setAllUserCredentionals();
+		
 		if(usernameDoesnotExists()==true) {
-			System.out.println("Username Invalid");
+			System.out.println("Username Invalid ");
 			return;
 		}
 		
 		System.out.println("Enter your Password:");
-		String inputPassword = input.nextLine();
+		inputPassword = input.nextLine();
 		
 		if(inputPassword.equals("")) {
 			System.out.println("Password is empty");
@@ -90,7 +103,8 @@ public class Login {
 		
 	}
 	
-	private boolean passwordCheck() {
+	private boolean passwordCheck() {	
+		
 		if(allCredentials.get(inputUserName).equals(inputPassword))
 			return true;
 		return false;
