@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class UserProccess {
 	
 	private String username;
-	private HashMap<String, String> userDatabase = new HashMap <String,String>();
+	private HashMap<String, String[]> userDatabase = new HashMap <String,String[]>();
 	
 	public  void userProcesses(Login loginObj) {
 		
@@ -32,7 +32,9 @@ public class UserProccess {
 	private void distplayUserOptions() {
 		System.out.println("\n-----------------------------------------------");
 		System.out.println("Enter 1 to add a new website credential");
-		System.out.println("Enter 2 to add an existing website credential");
+		System.out.println("Enter 2 to remove an existing website credential");
+		System.out.println("Enter 3 to change an existing website password");
+		System.out.println("Enter 4 to display all website details");
 		System.out.println("-----------------------------------------------");
 		
 	}
@@ -49,13 +51,38 @@ public class UserProccess {
 		case "2":
 			deleteWebsite(input);
 			break;
+		case "3":
+			changeWebsitePassword(input);
+			break;
+		case "4":
+			displayWebsiteDetails();
+			break;
 		default:
 			System.out.println("Invalid input");
 		}
 		
 	}
 	
-	private void deleteWebsite(Scanner input) {
+	private void displayWebsiteDetails() {
+		
+		try {
+			getUserDataBase();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		if(userDatabase.isEmpty())
+			System.out.println("No info avilable");
+		
+		else {
+			System.out.println("----------------------------");
+			displayWebsiteDetailsFromDatabase();
+			System.out.println("----------------------------");
+		}
+		
+	}
+	
+	private void changeWebsitePassword(Scanner input) {
 		System.out.println("Enter the website name");
 		String website=input.nextLine();
 		
@@ -74,9 +101,51 @@ public class UserProccess {
 			System.out.println("Website not found");
 			return;
 		}
-		else {
-			deleteWebsiteFromDatbase(website);
+		
+		System.out.println("Enter wesite's new password");
+		String password1=input.nextLine();
+		
+		if(password1.equals("")) {
+			System.out.println("Password cannot be empty");
+			return;
 		}
+		
+		System.out.println("Enter website's new password once again");
+		String password2=input.nextLine();
+		
+		if(password1.equals(password2)) {
+			changeWebsitePasswordFromDatbase(website,password2);
+			System.out.println("Website's password changed successfully");
+		}
+		else {
+			System.out.println("website's passwords entered doesn't match");
+		}
+	}
+	
+	private void deleteWebsite(Scanner input) {
+		
+		System.out.println("Enter the website name");
+		String website=input.nextLine();
+		
+		if(website.equals("")) {
+			System.out.println("Website name is empty");
+			return;
+		}
+		
+		try {
+			getUserDataBase();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		if(websiteAlreadyExists(website)==false){
+			System.out.println("Website not found");
+			return;
+		}
+		deleteWebsiteFromDatbase(website);
+		System.out.println("website details have been removed from database");
+		
+		
 	}
 	
 	private void addNewWebsite(Scanner input1) {
@@ -108,6 +177,13 @@ public class UserProccess {
 			return;
 		}
 		
+		System.out.println("Enter wesite's Username");
+		String username1=input1.nextLine();
+		if(username1.equals("")) {
+			System.out.println("Username cannot be empty");
+			return;
+		}
+		
 		System.out.println("Enter wesite's password");
 		String password1=input1.nextLine();
 		
@@ -120,7 +196,7 @@ public class UserProccess {
 		String password2=input1.nextLine();
 		
 		if(password1.equals(password2)) {
-			addwebsiteDetails(website,password2);
+			addwebsiteDetails(website,username1,password2);
 			System.out.println("Website details entered sussessfully");
 		}
 		else
@@ -128,8 +204,31 @@ public class UserProccess {
 		
 	}
 	
+	private void displayWebsiteDetailsFromDatabase() {
+		
+		Iterator<Entry<String, String[]>> iterator = userDatabase.entrySet().iterator();
+		
+		while(iterator.hasNext()) {
+			System.out.println("----------------------------");
+			Map.Entry mapElemnt = (Map.Entry)iterator.next();
+			System.out.println("Website: "+mapElemnt.getKey());
+			String tempArray[]=(String[]) mapElemnt.getValue();
+			System.out.println("Username: "+tempArray[0]);
+			System.out.println("Password: "+tempArray[1]);
+			System.out.println("----------------------------");
+		}
+		
+	}
+	
 	private void deleteWebsiteFromDatbase(String website) {
 		userDatabase.remove(website);
+		overRightusersDatabase();
+	}
+	
+	private void changeWebsitePasswordFromDatbase(String website ,String password) {
+		String tempValueArray[]=userDatabase.get(website);
+		tempValueArray[1]=password;
+		userDatabase.replace(website, tempValueArray);
 		overRightusersDatabase();
 	}
 	
@@ -139,7 +238,7 @@ public class UserProccess {
 		return false;
 	}
 	
-	private void addwebsiteDetails(String webSite, String password) {
+	private void addwebsiteDetails(String webSite, String tempUsername, String password) {
 		File fileObj = new File(username);
 		
 		FileWriter fileWriter = null;
@@ -152,6 +251,7 @@ public class UserProccess {
 					fileWriter.append("\n"+webSite);
 				else
 					fileWriter.append(webSite);
+				fileWriter.append("\n"+tempUsername);
 				fileWriter.append("\n"+password);
 				
 			}else {
@@ -182,7 +282,7 @@ public class UserProccess {
 					
 				fileWriter = new FileWriter(fileObj);
 				
-				Iterator<Entry<String, String>> iterator = userDatabase.entrySet().iterator();
+				Iterator<Entry<String, String[]>> iterator = userDatabase.entrySet().iterator();
 				
 				int iterationCounter=0;
 				
@@ -192,10 +292,11 @@ public class UserProccess {
 						fileWriter.append("\n"+(String) mapElemnt.getKey());
 					else	
 						fileWriter.append((String) mapElemnt.getKey());
-					fileWriter.append("\n"+(String) mapElemnt.getValue());
+					String tempArray[]=(String[]) mapElemnt.getValue();
+					fileWriter.append("\n"+tempArray[0]);
+					fileWriter.append("\n"+tempArray[1]);
 					iterationCounter++;
 				}
-				System.out.println("website and password deleted successfully");
 				
 			}else {
 				throw new FileNotFoundException("File is not Available with name "+fileObj.getName());
@@ -222,14 +323,13 @@ public class UserProccess {
 			if(fileObj.exists()==false)
 				fileObj.createNewFile();
 			Scanner scannerReader = new Scanner(fileObj);
-			int lineCounter=0;
-			String tempKey=new String("");
+			
 			while(scannerReader.hasNextLine()) {
-				if(lineCounter%2==0)
-					tempKey=scannerReader.nextLine();
-				else if(!tempKey.equals(""))
-					userDatabase.put(tempKey, scannerReader.nextLine());
-				lineCounter++;
+				String tempKey=scannerReader.nextLine();
+				String usernameAndPwd[]= new String[2];
+				usernameAndPwd[0]=scannerReader.nextLine();
+				usernameAndPwd[1]=scannerReader.nextLine();
+				userDatabase.put(tempKey, usernameAndPwd);
 			}
 			scannerReader.close();
 		} catch (IOException e) {

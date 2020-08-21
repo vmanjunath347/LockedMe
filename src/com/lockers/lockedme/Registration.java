@@ -79,8 +79,13 @@ public class Registration {
 		if(paswordCheck(password)==false) {
 			return;
 		}
+		System.out.println("Confirm password");
+		String password2=input.nextLine();
 		
-		addnewUser(userName,password);
+		if(password.equals(password2))
+			addnewUser(userName,password);
+		else
+			System.out.println("Passwords doesn't match");
 		
 	}
 	
