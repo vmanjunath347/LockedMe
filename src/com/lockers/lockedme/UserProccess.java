@@ -16,6 +16,9 @@ public class UserProccess {
 	private String username;// stores the username of the login user
 	private HashMap<String, String[]> userDatabase = new HashMap <String,String[]>();// stores the website details of the log in user from the user file
 	
+	//stores all the web sites as key and user name and password in an array as value
+	private HashMap<String, String> allCredentials = new HashMap<String,String>(); 
+		
 	//this method is called outsie class to run any user process
 	public  void userProcesses(Login loginObj) {
 		
@@ -39,6 +42,7 @@ public class UserProccess {
 		System.out.println("Enter 3 to change an existing website password");
 		System.out.println("Enter 4 to display all website details");
 		System.out.println("Enter 5 to logout");
+		System.out.println("Enter * to delete your lockedMe account");
 		System.out.println("-----------------------------------------------");
 		operations(); // performs operation based on users input.
 	}
@@ -63,6 +67,9 @@ public class UserProccess {
 		case "4":
 			displayWebsiteDetails(); // diaplays all the websites along with it's username and password in users database
 			break;
+		case "*":
+			delteLockedmeAccount(input); //deletes locked me account
+			break;
 		case "5":
 			System.out.println("Log out successfull");
 			return;
@@ -71,6 +78,32 @@ public class UserProccess {
 		}
 		
 	}
+	
+	//deletes locked me account
+	private void delteLockedmeAccount(Scanner input) {
+		System.out.println("press 1 to confirm account deletion");
+		System.out.println("press 2 to go back to the main menu");
+		System.out.println("press 3 to Logout");
+		
+		String userInput = input.nextLine();
+		switch(userInput) {
+		case "1":
+			deleteUserFile(); //deletes file with user details
+			deleteUserDetailsFromDb();// deletes user details from main database
+			System.out.println("Account Deleted Successfully");
+			break;
+		case "2":
+			distplayUserOptions();// displays the option of tasks available to the user.
+			break;
+		case "3":
+			System.out.println("Logout Successful");
+			break;
+		default: 
+			System.out.println("Invalid input");
+			delteLockedmeAccount(input);
+		}
+	}
+	
 	
 	// diaplays all the websites along with it's username and password in users database
 	private void displayWebsiteDetails() {
@@ -496,5 +529,98 @@ public class UserProccess {
 		} 
 	
 	}
+	
+	// deletes user details from main database
+	private void deleteUserDetailsFromDb() {
+		getAllUserCredentionals();//fetches user name and password from database file and adds them to the hashmap
+		//removes user key from hashmap
+		if(allCredentials.containsKey(username))
+			allCredentials.remove(username);
+		setAllUserCredentionals(); //adds updated usermap to db;
+	}
+	
+	//adds updated usermap to db;
+	private void setAllUserCredentionals() {
+		File fileObj = new File("database.txt");
+		
+		FileWriter fileWriter = null;
+		
+		try {
+			if(fileObj.exists()) {
+					
+				fileWriter = new FileWriter(fileObj);
+				
+				Iterator<Entry<String, String>> iterator = allCredentials.entrySet().iterator();
+				
+				int iterationCounter=0;
+				
+				while(iterator.hasNext()) {
+					Map.Entry mapElemnt = (Map.Entry)iterator.next();
+					if(iterationCounter!=0)	
+						fileWriter.append("\n"+(String) mapElemnt.getKey());
+					else	
+						fileWriter.append((String) mapElemnt.getKey());
+					
+					fileWriter.append("\n"+(String) mapElemnt.getValue());
+					
+					iterationCounter++;
+				}
+				
+			}else {
+				throw new FileNotFoundException("File is not Available with name "+fileObj.getName());
+			}
+			
+		}
+		catch (IOException e) {
+			System.out.println("An Error Occurred");
+			//e.printStackTrace();
+		} 
+		try {
+				fileWriter.close();
+			} 
+		catch (IOException e) {
+				// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	//deletes file with user details
+	private void deleteUserFile() {
+		File fileObj = new File(username+".txt");
+		if(fileObj.exists()==true)
+			fileObj.delete();
+	}
+	
+	//fetches user name and password from database file and adds them to the hashmap
+		private void getAllUserCredentionals() {
+			File fileObj = new File("database.txt");
+			Scanner scannerReader;
+			try {
+				if(fileObj.exists()==false)
+					fileObj.createNewFile();
+				
+				scannerReader = new Scanner(fileObj);
+				int lineCounter=0;
+				String tempUser= new String("");
+				while(scannerReader.hasNextLine()) {
+					
+					if(lineCounter%2==0)
+						tempUser=scannerReader.nextLine();
+					else if(lineCounter%2!=0)
+						allCredentials.put(tempUser, scannerReader.nextLine());
+					
+					lineCounter++;	
+				}
+				scannerReader.close();
+			} 
+			catch (FileNotFoundException e) {
+				e.printStackTrace();
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
 
 }

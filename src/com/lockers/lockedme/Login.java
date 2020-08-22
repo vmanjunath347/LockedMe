@@ -30,6 +30,7 @@ public class Login {
 
 	//stores all the web sites as key and user name and password in an array as value
 	private HashMap<String, String> allCredentials = new HashMap<String,String>(); 
+
 	
 	//fetches all user credentials from database file to hashmap allCredentials
 	private void setAllUserCredentionals() {
