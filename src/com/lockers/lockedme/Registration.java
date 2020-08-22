@@ -8,15 +8,19 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+//for methods asociated with registeration
 public class Registration {
 	
-	private HashMap<String, String> allUserCredentails = new HashMap<String,String>();
+	private HashMap<String, String> allUserCredentails = new HashMap<String,String>();//to store username and passwords of already existing user.
 	
-
+	//fetches user name and password from database file and adds them to the hashmap
 	private void setAllUserCredentionals() {
 		File fileObj = new File("database.txt");
 		Scanner scannerReader;
 		try {
+			if(fileObj.exists()==false)
+				fileObj.createNewFile();
+			
 			scannerReader = new Scanner(fileObj);
 			int lineCounter=0;
 			String tempUser= new String("");
@@ -34,10 +38,14 @@ public class Registration {
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 	}
 
+	//handles registration operation at user interface
 	public void fetchAuthInfo() {
 		Scanner input = new Scanner(System.in);
 		
@@ -51,8 +59,10 @@ public class Registration {
 		
 		String userName= input.nextLine();
 		
+		//returns if entered username is null
 		if(userName.equals("")) {
 			System.out.println("Username is emply.");
+			tryAgaintoRegister(input);// runs fetchAuthInfo again
 			return;
 		}
 		
@@ -61,35 +71,64 @@ public class Registration {
 		//check if username already exists
 		if(userNameExists(userName)==true) {
 			System.out.println("Username already exists.");
+			tryAgaintoRegister(input);// runs fetchAuthInfo again
 			return;
 		}
 		
 		System.out.println("**********Enter a password**********");
 		System.out.println("\nNote: Password should be atleast 6 characters long,");
 		System.out.println("should have atleast 1 uppercase character,");
-		System.out.println("should have atleast 1 integer.");
+		System.out.println("should have atleast 1 number value.");
 		
 		String password= input.nextLine();
 		
+		//if entered password is null, returns
 		if(password.equals("")) {
 			System.out.println("Password is emply.");
+			tryAgaintoRegister(input);// runs fetchAuthInfo again
 			return;
 		}
 		
+		//if passes doesnt pass the crieteria, returns
 		if(paswordCheck(password)==false) {
+			tryAgaintoRegister(input);// runs fetchAuthInfo again
 			return;
 		}
 		System.out.println("Confirm password");
 		String password2=input.nextLine();
 		
+		//if both the password matches registeration happens
 		if(password.equals(password2))
 			addnewUser(userName,password);
-		else
+		else {
 			System.out.println("Passwords doesn't match");
-		
+			tryAgaintoRegister(input);// runs fetchAuthInfo again
+		}
 	}
 	
+	// runs fetchAuthInfo again
+	private void tryAgaintoRegister(Scanner input) {
+		System.out.println("------------");
+		System.out.println("Enter 1 to try again");
+		System.out.println("Enter 2 to Exit");
+		String inputvalue=input.nextLine();
+		switch(inputvalue) {
+		case "1":
+			fetchAuthInfo();
+			break;
+		case "2":
+			System.out.println("Exited");
+			return;
+			//sbreak;
+		default:
+			System.out.println("Invalid Input");
+			tryAgaintoRegister(input);
+			//System.out.println("--------------------");
+			break;
+		}
+	}
 	
+	// checks password criteria
 	private boolean paswordCheck(String psswrd) {
 		if(psswrd.length()<6) {
 			System.out.println("Password should be atleast 6 characters long");
@@ -106,13 +145,14 @@ public class Registration {
 		return true;
 	}
 	
+	//checks if username already exists
 	private boolean userNameExists(String user) {
 		if(allUserCredentails.containsKey(user))
 			return true;
 		return false;
 	}
 	
-	
+	//adds new user to the database file
 	private void addnewUser(String user,String passwrd) {
 		
 		File fileObj = new File("database.txt");
